@@ -1,5 +1,5 @@
 #
-#  Copyright (c) 2019, The OpenThread Authors.
+#  Copyright (c) 2020, The OpenThread Authors.
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -26,8 +26,35 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-if(OT_APP_CLI)
-    add_subdirectory(cli)
+add_executable(ot-central-controller
+    cli_uart.cpp
+    main.c
+)
+
+target_include_directories(ot-central-controller PRIVATE ${COMMON_INCLUDES})
+
+if(NOT DEFINED OT_PLATFORM_LIB_FTD)
+    set(OT_PLATFORM_LIB_FTD ${OT_PLATFORM_LIB})
 endif()
 
-add_subdirectory(central_controller)
+target_link_libraries(ot-central-controller PRIVATE
+    openthread-cli-ftd
+    ${OT_PLATFORM_LIB_FTD}
+    openthread-ftd
+    ${OT_PLATFORM_LIB_FTD}
+    openthread-cli-ftd
+    ${OT_MBEDTLS}
+    ot-config-ftd
+    ot-config
+)
+
+if(OT_LINKER_MAP)
+    if("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang")
+        target_link_libraries(ot-central-controller PRIVATE -Wl,-map,ot-central-controller.map)
+    else()
+        target_link_libraries(ot-central-controller PRIVATE -Wl,-Map=ot-central-controller.map)
+    endif()
+endif()
+
+install(TARGETS ot-central-controller
+    DESTINATION bin)

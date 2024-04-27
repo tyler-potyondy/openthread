@@ -26,8 +26,13 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 #
 
-if(OT_APP_CLI)
-    add_subdirectory(cli)
+set(COMMON_INCLUDES
+    ${OT_PUBLIC_INCLUDES}
+    ${PROJECT_SOURCE_DIR}/examples/platforms
+    ${PROJECT_SOURCE_DIR}/src/core
+)
+
+if(OT_FTD)
+    include(ftd.cmake)
 endif()
 
-add_subdirectory(central_controller)
