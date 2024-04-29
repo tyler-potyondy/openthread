@@ -27,11 +27,6 @@
  */
 
 #include <assert.h>
-#ifdef __linux__
-#include <signal.h>
-#include <sys/prctl.h>
-#endif
-
 
 #include <openthread-system.h>
 #include <openthread/dataset_ftd.h>
@@ -63,17 +58,19 @@
 #include <utils/code_utils.h>
 #include "lib/platform/reset_util.h"
 
+
 #define UDP_PORT 1212
 
 bool reply = false;
 
 static const char UDP_DEST_ADDR[] = "ff02::1";
-static const char UDP_PAYLOAD[]   = "Hello OpenThread World!";
+static char UDP_PAYLOAD[]   = "Hello OpenThread World!";
 
 static void initUdp(otInstance *aInstance);
 static void sendUdp(otInstance *aInstance);
 
 static otUdpSocket sUdpSocket;
+extern uint8_t otTemperatureInput(otIp6Address ipv6, uint8_t temperature);
 
 void handleUdpReceive(void *aContext, otMessage *aMessage, 
                       const otMessageInfo *aMessageInfo);
@@ -130,7 +127,6 @@ pseudo_reset:
 
     setNetworkConfiguration(instance);
 
-    // otPlatUartEnable();
     // uint8_t buf[7] = {'h', 'e', 'l', 'l', 'o','\r','\n'};
     
     
@@ -250,6 +246,27 @@ void handleUdpReceive(void *aContext, otMessage *aMessage,
     OT_UNUSED_VARIABLE(aContext);
     OT_UNUSED_VARIABLE(aMessage);
     OT_UNUSED_VARIABLE(aMessageInfo);
+      char buf[20];
+  int length;
+
+  length      = otMessageRead(aMessage, otMessageGetOffset(aMessage), buf, sizeof(buf) - 1);
+
+  uint8_t temperature = buf[0];
+
+
+    // const uint8_t val[1] = 'a'};
+    
+    // otPlatUartEnable();
+    // // otPlatUartSend((const uint8_t*) &buf,1);
+    // otPlatUartSend(val, 1);
+    // otPlatUartFlush();
+    // otPlatUartDisable();
+    
+    // based on the sender's address, update the stored temperature 
+    // for that child
+    uint8_t avg_temp = otTemperatureInput(aMessageInfo->mPeerAddr, temperature);
+
+    UDP_PAYLOAD[0] = avg_temp;
 
     sendUdp((otInstance *)aContext);
 }

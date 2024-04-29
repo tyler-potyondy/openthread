@@ -27,6 +27,7 @@
 #
 
 add_executable(ot-central-controller
+    temperature_map.cpp
     cli_uart.cpp
     main.c
 )
